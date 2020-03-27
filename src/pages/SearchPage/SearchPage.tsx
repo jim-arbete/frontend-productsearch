@@ -1,21 +1,14 @@
 import React, { Suspense } from 'react';
 import { useAsync, IfFulfilled, IfRejected, PromiseFn } from "react-async"
-
 import logo from './logo.svg';
 
-// const BASE_API = 'https://swapi.co/api/starships'
 const BASE_API = 'https://search-pj-campaigns-dykc3wbnqz22xvoiwp2ta5bk3m.eu-west-1.es.amazonaws.com/campaign-se-4-deals/_search'
-
-// const fetchSearch: PromiseFn<string> = ({ searchTerm }) =>
-//   fetch(`https://swapi.co/api/starships/${searchTerm}`)
-//     .then(res => (res.ok ? Promise.resolve(res) : Promise.reject(res)))
-//     .then(res => res.json())
 
 const fetchSearch: PromiseFn<any> = async ({ term }, { signal }) => {
   const query = {
     query: {
       match: {
-        'product.name': 'apple'
+        'product.name': term
       }
     }
   };
@@ -32,33 +25,36 @@ const fetchSearch: PromiseFn<any> = async ({ term }, { signal }) => {
   return response.json()
 }
 
-// // type SearchDataDTO = {imdbID: string; Title: string; Year: string;}
-// const state = useAsync({ promiseFn: fetchSearch, debugLabel: `User ${searchTerm}`, searchTerm })
-
 const SearchPlaceholder = () => (
-  <div className="placeholder">
-    <div className="productname">Loading..</div>
-    <div className="pricedrop" />
-    <div className="formatedprice" />
+  <div className="searchitem">
+    <div className="product-image" />
+    <div className="placeholder">&nbsp;</div>
   </div>
 )
 
 type SearchItemProps = {
   name: string
-  formatedprice: string
-  imageSrc?: string
-  pricedrop?: number
+  priceFormated: string
+  priceCurrent: number
+  pricePrevious: number
+  priceDiff: number
+  imageSrc?: any
 }
-const SearchItem = ({ name, imageSrc, formatedprice, pricedrop }: SearchItemProps ) => (
-  <div className="searchitem">
-    <div className="product-image">
-      {!imageSrc ?? <img src={imageSrc} alt={name} />}
+const SearchItem = ({ name, priceCurrent, pricePrevious, priceDiff, priceFormated, imageSrc }: SearchItemProps ) => {
+  const showPriceDropIfLowerThanPreviousPrice = priceCurrent < pricePrevious;
+  return (
+    <div className="searchitem">
+      <div className="product-image">
+        {!imageSrc['140'] || <img src={imageSrc['140']} alt={name} />}
+      </div>
+      <div className="product-name">{name}</div>
+      <div className="price-box">
+        <div className="formatedprice">{priceFormated}</div>
+        {!showPriceDropIfLowerThanPreviousPrice || <div className="pricedrop">Price drop: <strong>{priceDiff}%</strong></div>}
+      </div>
     </div>
-    <div className="product-name">{name}</div>
-    <div className="pricedrop">{pricedrop}</div>
-    <div className="formated-price">{formatedprice}</div>
-  </div>
-)
+  )
+}
 
 const SearchItems = ({ items }: { items: any[] }) => {
   if (!items.length) return <p>Empty search result</p>
@@ -67,17 +63,19 @@ const SearchItems = ({ items }: { items: any[] }) => {
     <>
       {items.map(item => <SearchItem
         key={item?._id ?? 1}
+        imageSrc={item?._source?.product?.media?.product_images?.first ?? null}
         name={item?._source?.product?.name ?? '-'}
-        formatedprice={item?._source?.price?.display?.offer ?? '-'}
-        // pricedrop={159}
+        priceFormated={item?._source?.price?.display?.offer ?? '-'}
+        priceDiff={item?._source?.price?.diff_percentage}
+        priceCurrent={item?._source?.price?.offer}
+        pricePrevious={item?._source?.price?.compare}
         />)}
     </>
   )
 };
 
-const SwapiApi = ({ term }: { term: string }) => {
+const SearchComponent = ({ term }: { term: string }) => {
   const state = useAsync({ suspense: true, promiseFn: fetchSearch, term })
-  // <IfFulfilled state={state}>{data => <pre>{JSON.stringify(data, null, 2)}</pre>}</IfFulfilled>
   return (
     <>
       <IfFulfilled state={state}>{data => <SearchItems items={data?.hits?.hits ?? []} />}</IfFulfilled>
@@ -102,10 +100,11 @@ const SearchPage = () => (
             <>
               <SearchPlaceholder />
               <SearchPlaceholder />
+              <SearchPlaceholder />
             </>
           }
         >
-          <SwapiApi term="apple" />
+          <SearchComponent term="hp" />
         </Suspense>
       </article>
       </div>

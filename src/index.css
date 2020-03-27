@@ -26,7 +26,7 @@ body .align-site-content-center {
 }
 @media (min-width: 780px) {
   body .align-site-content-center {
-    width: 90%;
+    width: 70%;
   }
 }
 
@@ -103,11 +103,9 @@ header a {
   font-weight: 600;
 }
 
-
 .placeholder {
   flex: 1;
   background-color:#ececec;
-  margin-top: 10px;
   padding-left: 10px;
   line-height: 1.8em;
   border-radius: 4px;
@@ -116,11 +114,10 @@ header a {
 .searchitem {
   font-size: .9em;
   padding: 10px;
-  max-width: 500px;
-  height: 4em;
+  height: 5.5em;
   display: flex;
+  align-items: center;
   border-bottom: 1px solid #eaeaea;
-  
 }
   .searchitem .product-image {
     align-items: center;
@@ -128,22 +125,31 @@ header a {
     height: 40px;
     margin-right: 10px;
     flex: 0 0 auto;
-    background: rgb(234, 234, 234);
+    background: #eaeaea;
     border-radius: 5px;
   }
   .searchitem .product-image img {
     display: block;
-      max-width: 40px;
-      max-height: 40px;
-      width: auto;
-      height: auto;
+    max-width: 40px;
+    max-height: 40px;
+    width: auto;
+    height: auto;
   }
   .searchitem .product-name {
-    flex-grow: 1.5;
+    flex-grow: 1;
+    max-width: 600px;
+    margin-right: 10px;
   }
-  .searchitem .formated-price {
-    min-width: 60px;
-    color: #db2a30;
-    font-weight: bold;
-    flex-wrap: nowrap;
+  .searchitem .price-box {
+    min-width: 80px;
+    flex-wrap: wrap;
   }
+    .searchitem .price-box .formatedprice {
+      color: #db2a30;
+      font-weight: bold;
+      font-size: 1.1em;
+      text-align: right;
+    }
+    .searchitem .price-box .pricedrop {
+      text-align: right;
+    }
