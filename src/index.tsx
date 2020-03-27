@@ -1,17 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import SearchPage from './pages/SearchPage/SearchPage';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+// Legacy Mode: 
+// ReactDOM.render(
+//   <React.StrictMode>
+//     <SearchPage />
+//   </React.StrictMode>,
+//   document.getElementById('root')
+// );
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+// Concurrent Mode: 
+const root = document.getElementById("root") as HTMLElement;
+ReactDOM.createRoot(root).render(<SearchPage />);
