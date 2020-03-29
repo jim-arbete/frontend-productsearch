@@ -1,9 +1,9 @@
 import React, { Suspense, useState, useCallback } from 'react';
-import { useAsync, IfFulfilled, IfRejected, PromiseFn } from "react-async"
-import SearchForm from '../../components/SearchForm/SearchForm'
+import { useAsync, IfFulfilled, IfRejected, PromiseFn } from "react-async";
+import SearchForm from '../../components/SearchForm/SearchForm';
 import logo from './logo.svg';
 
-const BASE_API = 'https://search-pj-campaigns-dykc3wbnqz22xvoiwp2ta5bk3m.eu-west-1.es.amazonaws.com/campaign-se-4-deals/_search'
+const BASE_API = 'https://search-pj-campaigns-dykc3wbnqz22xvoiwp2ta5bk3m.eu-west-1.es.amazonaws.com/campaign-se-4-deals/_search';
 
 const fetchSearch: PromiseFn<any> = async ({ searchTerm, isAutocomplete }, { signal }) => {
   if (!searchTerm) return false;
@@ -24,8 +24,8 @@ const fetchSearch: PromiseFn<any> = async ({ searchTerm, isAutocomplete }, { sig
     },
     body: JSON.stringify(query)
   })
-  if (!response.ok) throw new Error(`${response.status}`)
-  return response.json()
+  if (!response.ok) throw new Error(`${response.status}`);
+  return response.json();
 }
 
 const SearchPlaceholder = () => (
@@ -79,7 +79,7 @@ const SearchItems = ({ items }: { items: any[] }) => {
 const ListProducts = ({ searchTerm, isAutocomplete = false }: { searchTerm: string, isAutocomplete: boolean}) => {
   // Use the `key` prop to force re-render when `isAutocomplete` changes together with `searchTerm`
   // This helps when forcing `useAsync` to do an intended re-run
-  const state = useAsync({ watch: searchTerm , suspense: true, promiseFn: fetchSearch, searchTerm, isAutocomplete })
+  const state = useAsync({ watch: searchTerm , suspense: true, promiseFn: fetchSearch, searchTerm, isAutocomplete });
   return (
     <>
       <IfFulfilled state={state}>{data => <SearchItems items={data?.hits?.hits ?? []} />}</IfFulfilled>
