@@ -1,28 +1,34 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import useDebounce from '../../hooks/useDebounce';
 import SearchInput, { SearchButton, SearchIconSVG } from '../Search/Search';
 
 type SearchFormProps = {
   /** The callback function triggered when the `input changes and you click on the `search-icon``, the clear-icon or press the `Enter` key. */
-  onSearch: (value: string) => void
+  onAutocompleteSearch: (value: string) => void
+  onSubmitSearch: (value: string) => void
   /** Limit when the change event should be triggered by SET characters amount */
   minAllowedInputChars: number
 }
 
-const SearchForm = ({ onSearch, minAllowedInputChars }: SearchFormProps) => {
+const SearchForm = ({ onAutocompleteSearch, onSubmitSearch, minAllowedInputChars }: SearchFormProps) => {
   const [debouncedSearch, search, setSearch] = useDebounce('', 700);
+  
+  // `isFormSubmitted` prevents onAutocompleteSearch from running after the form is submitted because of the debounce
+  const isFormSubmitted = useRef(false);
 
   const setValueAndValidate = (value: string): void => {
     if (value.length > minAllowedInputChars) setSearch(value);
   }
 
   useEffect(() => {
-    onSearch(debouncedSearch);
-  }, [debouncedSearch, onSearch]);
+    if (!isFormSubmitted.current && search === debouncedSearch) onAutocompleteSearch(debouncedSearch);
+    isFormSubmitted.current = false;
+  }, [debouncedSearch, search, onAutocompleteSearch]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    onSearch(search);
+    isFormSubmitted.current = true;
+    onSubmitSearch(search);
   }
 
   return (

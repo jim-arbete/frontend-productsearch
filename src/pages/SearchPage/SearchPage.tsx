@@ -5,12 +5,13 @@ import logo from './logo.svg';
 
 const BASE_API = 'https://search-pj-campaigns-dykc3wbnqz22xvoiwp2ta5bk3m.eu-west-1.es.amazonaws.com/campaign-se-4-deals/_search'
 
-const fetchSearch: PromiseFn<any> = async ({ term }, { signal }) => {
-  if (!term) return false;
+const fetchSearch: PromiseFn<any> = async ({ searchTerm, isAutocomplete }, { signal }) => {
+  if (!searchTerm) return false;
+  const computedMatchParm = isAutocomplete ? 'match_phrase_prefix' : 'match';
   const query = {
     query: {
-      match: {
-        'product.name': term
+      [computedMatchParm]: {
+        'product.name': searchTerm
       }
     }
   };
@@ -60,7 +61,6 @@ const SearchItem = ({ name, priceCurrent, pricePrevious, priceDiff, priceFormate
 
 const SearchItems = ({ items }: { items: any[] }) => {
   if (!items.length) return <p>Empty search result</p>
-  console.log('items :', items);
   return (
     <>
       {items.map(item => <SearchItem
@@ -76,9 +76,10 @@ const SearchItems = ({ items }: { items: any[] }) => {
   )
 };
 
-const ListProductsBySearchTerm = ({ term }: { term: string }) => {
-  // console.log('ListProductsBySearchTerm > term :', term);
-  const state = useAsync({ watch: term , suspense: true, promiseFn: fetchSearch, term })
+const ListProducts = ({ searchTerm, isAutocomplete = false }: { searchTerm: string, isAutocomplete: boolean}) => {
+  // Use the `key` prop to force re-render when `isAutocomplete` changes together with `searchTerm`
+  // This helps when forcing `useAsync` to do an intended re-run
+  const state = useAsync({ watch: searchTerm , suspense: true, promiseFn: fetchSearch, searchTerm, isAutocomplete })
   return (
     <>
       <IfFulfilled state={state}>{data => <SearchItems items={data?.hits?.hits ?? []} />}</IfFulfilled>
@@ -89,9 +90,17 @@ const ListProductsBySearchTerm = ({ term }: { term: string }) => {
 
 const SearchPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAutocomplete, setIsAutocomplete] = useState(false);
 
-  // Prevents extra api calls when submitting form with `enter` or pressing `search-icon`
-  const handleOnSearch = useCallback((value) => setSearchTerm(value), []);
+  const computeListProductsProps = (_searchTerm: string, _isAutocomplete: boolean) => {
+    console.log('_searchTerm, _isAutocomplete :', _searchTerm, _isAutocomplete);
+    setIsAutocomplete(_isAutocomplete)
+    setSearchTerm(_searchTerm);
+  }
+
+  // useCallback => Prevents extra ListProducts renders(prevents api calls) when submitting form with `enter` or pressing `search-icon`
+  const handleSubmitSearch = useCallback((value) => computeListProductsProps(value, false), []);
+  const handleAutocompleteSearch = useCallback((value) => computeListProductsProps(value, true), []);
   
   return (
     <div id="SearchPage">
@@ -104,7 +113,7 @@ const SearchPage = () => {
       <div id="main">
         <div className="align-site-content-center flex flex-vertical-center">
         <article>
-          <SearchForm onSearch={handleOnSearch} />
+          <SearchForm onSubmitSearch={handleSubmitSearch} onAutocompleteSearch={handleAutocompleteSearch} />
           <Suspense
             fallback={
               <>
@@ -114,7 +123,7 @@ const SearchPage = () => {
               </>
             }
           >
-            <ListProductsBySearchTerm term={searchTerm} />
+            <ListProducts key={`${searchTerm}-${isAutocomplete}`} searchTerm={searchTerm} isAutocomplete={isAutocomplete} />
           </Suspense>
         </article>
         </div>
