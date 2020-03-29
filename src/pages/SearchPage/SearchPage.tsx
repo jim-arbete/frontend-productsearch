@@ -1,10 +1,12 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState, useCallback } from 'react';
 import { useAsync, IfFulfilled, IfRejected, PromiseFn } from "react-async"
+import SearchForm from '../../components/SearchForm/SearchForm'
 import logo from './logo.svg';
 
 const BASE_API = 'https://search-pj-campaigns-dykc3wbnqz22xvoiwp2ta5bk3m.eu-west-1.es.amazonaws.com/campaign-se-4-deals/_search'
 
 const fetchSearch: PromiseFn<any> = async ({ term }, { signal }) => {
+  if (!term) return false;
   const query = {
     query: {
       match: {
@@ -74,8 +76,9 @@ const SearchItems = ({ items }: { items: any[] }) => {
   )
 };
 
-const SearchComponent = ({ term }: { term: string }) => {
-  const state = useAsync({ suspense: true, promiseFn: fetchSearch, term })
+const ListProductsBySearchTerm = ({ term }: { term: string }) => {
+  // console.log('ListProductsBySearchTerm > term :', term);
+  const state = useAsync({ watch: term , suspense: true, promiseFn: fetchSearch, term })
   return (
     <>
       <IfFulfilled state={state}>{data => <SearchItems items={data?.hits?.hits ?? []} />}</IfFulfilled>
@@ -84,32 +87,40 @@ const SearchComponent = ({ term }: { term: string }) => {
   )
 }
 
-const SearchPage = () => (
-  <div id="SearchPage">
-    <header>
-      <div className="align-site-content-center flex flex-vertical-center">
-        <a href="/"><img src={logo} className="flex flex-vertical-center App-logo" alt="logo" /></a>
-        <a href="/">React - Search Products App</a>
-      </div>
-    </header>
-    <div id="main">
-      <div className="align-site-content-center flex flex-vertical-center">
-      <article>
-        <Suspense
-          fallback={
-            <>
-              <SearchPlaceholder />
-              <SearchPlaceholder />
-              <SearchPlaceholder />
-            </>
-          }
-        >
-          <SearchComponent term="hp" />
-        </Suspense>
-      </article>
+const SearchPage = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Prevents extra api calls when submitting form with `enter` or pressing `search-icon`
+  const handleOnSearch = useCallback((value) => setSearchTerm(value), []);
+  
+  return (
+    <div id="SearchPage">
+      <header>
+        <div className="align-site-content-center flex flex-vertical-center">
+          <a href="/"><img src={logo} className="flex flex-vertical-center App-logo" alt="logo" /></a>
+          <a href="/">React - Search Products App</a>
+        </div>
+      </header>
+      <div id="main">
+        <div className="align-site-content-center flex flex-vertical-center">
+        <article>
+          <SearchForm onSearch={handleOnSearch} />
+          <Suspense
+            fallback={
+              <>
+                <SearchPlaceholder />
+                <SearchPlaceholder />
+                <SearchPlaceholder />
+              </>
+            }
+          >
+            <ListProductsBySearchTerm term={searchTerm} />
+          </Suspense>
+        </article>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+}
 
 export default SearchPage;

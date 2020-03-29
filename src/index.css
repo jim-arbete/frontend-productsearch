@@ -112,12 +112,18 @@ header a {
 }
 
 .searchitem {
+  opacity: 0.8;
+  transition: transform .1s;
   font-size: .9em;
   padding: 10px;
   height: 5.5em;
   display: flex;
   align-items: center;
   border-bottom: 1px solid #eaeaea;
+}
+.searchitem:hover {
+  transform: scale(1.02);
+  opacity: 1;
 }
   .searchitem .product-image {
     align-items: center;
@@ -137,11 +143,11 @@ header a {
   }
   .searchitem .product-name {
     flex-grow: 1;
-    max-width: 600px;
     margin-right: 10px;
   }
   .searchitem .price-box {
-    min-width: 80px;
+    justify-content: right;
+    width: 80px;
     flex-wrap: wrap;
   }
     .searchitem .price-box .formatedprice {
